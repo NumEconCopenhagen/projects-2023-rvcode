@@ -67,7 +67,7 @@ class HouseholdSpecializationModelClass:
         # d. disutlity of work
         epsilon_ = 1+1/par.epsilon
         TM = LM+HM
-        TF = LF+HF
+        TF = LF+HF 
         disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
         
         return utility - disutility
