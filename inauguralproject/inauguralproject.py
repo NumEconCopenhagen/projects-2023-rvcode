@@ -112,13 +112,61 @@ class HouseholdSpecializationModelClass:
 
     def solve(self,do_print=False):
         """ solve model continously """
+        
+        par = self.par
+        sol = self.sol
+        opt = SimpleNamespace()
 
-        pass    
+        # a. Set objective function
+        def obj_func(x):
+            LM, HM, LF, HF = x 
+            return -self.calc_utility(LM, HM, LF, HF)
+
+        # b. solve optimization 
+        # First set up initial guess for values
+        x0 = [12, 12, 12, 12] 
+        # Set bounds for choices 
+        bounds = [(0,24), (0,24), (0,24), (0,24)]
+        opt_sol = optimize.minimize(obj_func, x0, bounds = bounds)
+
+        #c. unpack the solution
+        opt.LM = opt_sol.x[0]
+        opt.HM = opt_sol.x[1]
+        opt.LF = opt_sol.x[2]
+        opt.HF = opt_sol.x[3]
+
+        # d. print
+        if do_print:
+            for k,v in opt.__dict__.items():
+                print(f'{k} = {v:6.4f}')
+        return opt
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
 
-        pass
+        par = self.par
+        sol = self.sol
+
+        # set up an empty vector of the size equal to the size of wF_vec
+        Home_ratio = np.zeros(par.wF_vec.size)
+
+        for i, wF in enumerate(par.wF_vec):
+            par.wF = wF
+
+            if discrete == True:
+                opt = self.solve_discrete()
+            else:
+                opt = self.solve()
+            
+            # record HF/HM ratio
+            sol.HM = opt.HM
+            sol.HF = opt.HF
+            Home_ratio[i] = sol.HF/sol.HM
+        
+        # store ratios in solution namespace
+        sol.Home_ratio = Home_ratio
+
+        return Home_ratio
 
     def run_regression(self):
         """ run regression """
