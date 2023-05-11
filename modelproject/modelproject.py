@@ -1,73 +1,118 @@
+      
 import numpy as np
 import matplotlib.pyplot as plt
 from ipywidgets import interactive, fixed
 from types import SimpleNamespace
 import scipy.optimize as optimize
 
-class StandardSolow:
+
+
+class Romer:
     def __init__(self):
-        self.par = {
-            'alpha': 0.33,
-            'g': 0.02,
-            'lambda_': 0.5,
-            's': 0.2,
-            'delta': 0.05,
-            'n': 0.02,
-        }
+        par = self.par = SimpleNamespace()
+
+        # Parameters
+        par.alpha = 0.3
+        par.beta = 0.2
+        par.kappa = 1 - par.alpha - par.beta
+        par.rho = 0.05
+        par.phi = 0.5
+        par.g = 0.02
+        par.lambda_ = 0.5
+        par.s = 0.2
+        par.delta = 0.05
+        par.n = 0.02
+        par.s_R = 0.2
+        par.X = 1.0 # land as a fixed resource
+        par.L = 1  # land is fixed
+
+    def steady_state_equations(x, par):
+        A, K, L, LA = x
+        eq1 = A - ((1+par.rho)/(1+par.n+par.rho))**(1/(1-par.phi))
+        eq2 = K - (par.s/(par.n+par.delta))**(1/(1-par.alpha)) * A * (par.s_R+1)
+        eq3 = L - K**(1-par.alpha)/(A**(1-par.alpha))
+        eq4 = LA - par.s_R*L
+        return [eq1, eq2, eq3, eq4]
+
+    def steady_state_values(self):
+        par = self.par
+        x0 = [1.0, 1.0, 1.0, 1.0] # initial guess for A, K, L, and LA
+        sol = optimize.root(Romer.steady_state_equations, x0, args=(par,), method='hybr')
+        A, K, L, LA = sol.x
+        Y = A*K**par.alpha*L**(1-par.alpha)
+        Y_per_L = Y/L
+        return Y_per_L, Y, L, K, A, LA
+
+class Solow:
+    def __init__(self):
+        par = self.par = SimpleNamespace()
+
+        # Parameters
+        par.alpha = 0.3
+        par.beta = 0.2
+        par.kappa = 1 - par.alpha - par.beta
+        par.rho = 0.05
+        par.phi = 0.5
+        par.g = 0.02
+        par.lambda_ = 0.5
+        par.s = 0.2
+        par.delta = 0.05
+        par.n = 0.02
+        par.s_R = 0.2
+        par.X = 1.0 # land as a fixed resource
+        par.L = 1  # land is fixed
     
-    @staticmethod
     def steady_state_equations(x, par):
         K, A = x
-        alpha = par['alpha']
-        s = par['s']
-        delta = par['delta']
-        g = par['g']
-        eq1 = K**alpha * (A * par['L'])**(1 - alpha) - s * K - delta * K
-        eq2 = A - (1 + g) * A
+        if K==0:
+            eq1 = 0  # set output to 0 when capital is 0
+        else:
+            eq1 = K**par.alpha*(A*par.L)**par.beta*par.X**par.kappa - par.s*K - par.delta*K
+        eq2 = A - (1+par.g)*A
         return [eq1, eq2]
 
-    def solve_steady_state(self):
-        x0 = [4.0, 4.0]  # initial guess for K and A
-        sol = root(self.steady_state_equations, x0, args=(self.par,))
-        if sol.success:
-            K_ss, A_ss = sol.x
-            Y_ss = K_ss**self.par['alpha'] * (A_ss * self.par['L'])**(1 - self.par['alpha'])
-            Y_per_L_ss = Y_ss / self.par['L']
-            return Y_per_L_ss, Y_ss, K_ss, A_ss
-        else:
-            raise ValueError("Steady state calculation did not converge.")
+    def steady_state_values(self):
+        par = self.par
+        x0 = [4.0, 4.0] # initial guess for K and A
+        sol = optimize.root(Solow.steady_state_equations, x0, args=(par,), method='hybr')
+        K_s, A_s = sol.x
+        Y_s = K_s**par.alpha*(A_s*par.L)**par.beta*par.X**par.kappa
+        Y_per_L_s = Y_s/par.L
+        return Y_per_L_s, Y_s, K_s, A_s
 
-class SemiEndogenous:
+class SemiEndogenousRomer:
     def __init__(self):
-        self.par = {
-            'alpha': 0.3,
-            'beta': 0.2,
-            'phi': 0.5,
-            'g': 0.02,
-            's': 0.2,
-            'delta': 0.05,
-            'n': 0.02,
-            'rho': 0.02,
-            's_R': 0.2,
-            'kappa': 0.2
-        }
+        par = self.par = SimpleNamespace()
+
+        # Parameters
+        par.alpha = 0.3
+        par.beta = 0.2
+        par.kappa = 1 - par.alpha - par.beta
+        par.rho = 0.05
+        par.phi = 0.5
+        par.g = 0.02
+        par.lambda_ = 0.5
+        par.s = 0.2
+        par.delta = 0.05
+        par.n = 0.02
+        par.s_R = 0.2
+        par.X = 1.0 # land as a fixed resource
+        par.L = 1  # land is fixed
 
     def steady_state_equations(self, x):
         par = self.par
         A, K, L, LA = x
-        eq1 = A - ((1 + par.rho) / (1 + par.n + par.rho)) ** (1 / (1 - par.phi))
-        eq2 = K - (par.s / (par.n + par.delta)) ** (1 / (1 - par.alpha)) * A ** (par.alpha / (1 - par.alpha)) * L ** (par.beta / (1 - par.alpha)) * (par.s_R + L) ** (par.kappa / (1 - par.alpha))
-        eq3 = LA - L * A
-        eq4 = LA - K * A
+        eq1 = A - ((1+par.rho)/(1+par.n+par.rho))**(1/(1-par.phi))
+        eq2 = K - (par.s/(par.n+par.delta))**(1/(1-par.alpha)) * A**(par.alpha/(1-par.alpha)) * L**(par.beta/(1-par.alpha)) * (par.s_R*par.X+L)**(par.kappa/(1-par.alpha))
+        eq3 = L - par.X - LA
+        eq4 = par.s_R * L - LA
         return [eq1, eq2, eq3, eq4]
 
-    def solve_steady_state(self):
-        x0 = [1.0, 1.0, 1.0, 1.0]  # initial guess for A, K, L, and LA
-        sol = root(self.steady_state_equations, x0, method='hybr')
-        if sol.success:
-            A, K, L, LA = sol.x
-            Y = K ** self.par['alpha'] * (A * L) ** self.par['beta']
-            Y_per_L = Y / L
-            return Y_per_L, Y, L, K, A, LA
-        else:
-            raise ValueError("Steady state calculation did not converge.")
+    def steady_state_values(self):
+        par = self.par
+        x0 = [1.0, 1.0, 1.0, 1.0] # initial guess for A, K, L, and LA
+        sol = optimize.root(self.steady_state_equations, x0, method='hybr')
+        A, K, L, LA = sol.x
+        Y = K**par.alpha*(A*L)**par.beta*par.X**par.kappa
+        Y_per_L = Y/L
+        return Y_per_L, Y, L, K, A, LA
