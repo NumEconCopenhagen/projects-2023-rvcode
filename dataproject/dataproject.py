@@ -17,15 +17,36 @@ def lorenz_curve(data):
     # Return the cumulative percentage of the data and the equally distributed population percentages
     return pop_perc, cumperc_data
 
-# Define a function to calculate the Gini coefficient
 def gini_coefficient(data):
+    # Sort the data in ascending order
+    sorted_data = np.sort(data)
+    
+    # Get the cumulative sum of the sorted data
+    cumulative_sum = np.cumsum(sorted_data)
+    
     # Calculate the Lorenz curve
-    x, y = lorenz_curve(data)
-    # Calculate the area between the Lorenz curve and the diagonal line of perfect equality
-    area = np.trapz(y, x) - 0.5
-    # Calculate the total area under the diagonal line of perfect equality
-    total_area = 0.5 * x[-1]
-    # Calculate the Gini coefficient as half of the ratio of the area between the Lorenz curve and the diagonal line to the total area
-    gini = area / total_area
+    Lorenz_curve = cumulative_sum / np.sum(sorted_data)
+    
+    # Calculate the area under the Lorenz curve using the trapezoidal rule
+    area_lorenz = np.trapz(Lorenz_curve)
+    
+    # Calculate the area of the perfect equality line
+    area_perfect_equality = np.linspace(0, 1, len(data) + 1)[1:]
+    
+    # Calculate the Gini coefficient
+    gini = 1 - 2 * area_lorenz
+    
+    # Make sure the Gini coefficient is within the range of 0 to 1
+    gini = max(0, min(1, gini))
+    
     # Return the Gini coefficient
     return gini
+
+
+
+# Define a function to calculate the Gini coefficient
+def gini(x):
+    total = 0
+    for i, xi in enumerate(x[:-1], 1):
+        total += np.sum(np.abs(xi - x[i:]))
+    return total / (len(x)**2 * np.mean(x))
