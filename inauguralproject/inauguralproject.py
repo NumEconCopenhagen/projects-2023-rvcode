@@ -127,7 +127,8 @@ class HouseholdSpecializationModelClass:
         x0 = [12, 12, 12, 12] 
         # Set bounds for choices 
         bounds = [(0,24), (0,24), (0,24), (0,24)]
-        opt_sol = optimize.minimize(obj_func, x0, bounds = bounds)
+        constraints = ({'type': 'ineq', 'fun': lambda x: 24 - (x[2] + x[3])})
+        opt_sol = optimize.minimize(obj_func, x0, bounds = bounds, constraints=constraints)
 
         #c. unpack the solution
         opt.LM = opt_sol.x[0]
@@ -162,6 +163,12 @@ class HouseholdSpecializationModelClass:
             sol.HM = opt.HM
             sol.HF = opt.HF
             Home_ratio[i] = sol.HF/sol.HM
+
+            sol.LM_vec[i] = opt.LM
+            sol.LF_vec[i] = opt.LF
+            sol.HM_vec[i] = opt.HM
+            sol.HF_vec[i] = opt.HF
+            
         
         # store ratios in solution namespace
         sol.Home_ratio = Home_ratio
@@ -178,7 +185,7 @@ class HouseholdSpecializationModelClass:
         y = np.log(sol.HF_vec/sol.HM_vec)
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
-    
+
     def estimate(self,alpha=None,sigma=None):
         """ estimate alpha and sigma """
 
