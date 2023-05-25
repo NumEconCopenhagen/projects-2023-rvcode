@@ -196,34 +196,35 @@ class HouseholdSpecializationModelClass:
 
 
     def calc_utility_new(self,LM,HM,LF,HF):
-    """ calculate new utility """
+        """ calculate new utility """
 
-    par = self.par
-    sol = self.sol
+        par = self.par
+        sol = self.sol
 
-    # a. consumption of market goods
-    C = par.wM*LM + par.wF*LF
+        # a. consumption of market goods
+        C = par.wM*LM + par.wF*LF
 
-    # b. home production
-    if par.sigma == 0:
-        H = min(HM, HF)
-    elif par.sigma == 1:
-        H = HM**(1-par.alpha)*HF**par.alpha
-    else:
-        H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma)+par.alpha*HF**((par.sigma-1)/par.sigma))**((par.sigma)/(par.sigma-1))
+        # b. home production
+        if par.sigma == 0:
+            H = min(HM, HF)
+        elif par.sigma == 1:
+            H = HM**(1-par.alpha)*HF**par.alpha
+        else:
+            H = ((1-par.alpha)*HM**((par.sigma-1)/par.sigma)+par.alpha*HF**((par.sigma-1)/par.sigma))**((par.sigma)/(par.sigma-1))
 
-    # c. total consumption utility
-    Q = C**par.omega*H**(1-par.omega)
-    utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho)
+        # c. total consumption utility
+        Q = C**par.omega*H**(1-par.omega)
+        utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho)
 
-    # d. disutlity of work
-    epsilon_ = 1+1/par.epsilon
-    TM = LM+HM
-    TF = LF+HF 
-    disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
+        # d. disutlity of work
+        epsilon_ = 1+1/par.epsilon
+        TM = LM+HM
+        TF = LF+HF 
+        disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
     
-    # e. extra disutility for HM
-    HM_disutility = par.nu_new*HM**epsilon_/epsilon_
+        # e. extra disutility for HM
+        HM_disutility = par.nu_new*HM**epsilon_/epsilon_
     
     
-    return utility - disutility - HM_disutility
+        return utility - disutility - HM_disutility
+        
