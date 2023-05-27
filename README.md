@@ -1,13 +1,13 @@
 # \[RVCode\]
 
 **Group members:**
-- Victor Emil Lundgaard
-- Rasmus Højgaard Mens
 - Carlo Freiesleben Hjort
+- Rasmus Højgaard Mens
+- Victor Emil Lundgaard
 
 This repository contains  
 1. Inaugural project. 
-2. Data project. We fetch data from **source x** on **y** and show that ...
-3. Model project. We model ...
+2. Data project. We fetch data from *WID.world* on netwealth data in Denmark, Germany and the United Kingdom. We show how inequality have developed across time
+3. Model project. We model a Solow model with endegenous growth in technology
 
 

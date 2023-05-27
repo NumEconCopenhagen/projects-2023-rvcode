@@ -1,6 +1,6 @@
 # Model analysis project
 
-Our project is titled **Analysis of the Solow Model ** where we have added the extra element XX
+Our project is titled **Analysis of the Solow Model ** where we have added the extra element of endegenous growth in technology
 
 The **results** of the project can be seen from running [modelproject.ipynb](modelproject.ipynb).
 
